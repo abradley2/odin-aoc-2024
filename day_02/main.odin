@@ -7,19 +7,19 @@ import "core:os"
 
 main :: proc() {
 	err := run()
-	if err != .None {
+	if err != nil {
 		fmt.eprintf("Error: %v\n", err)
 	}
 }
 
 Err :: union {
 	os.Error,
-	Parse_Input_Err,
 }
 
 run :: proc() -> (err: Err) {
-	context.allocator = lib.init_allocator() or_return
-	defer lib.deinit_allocator()
+	tracking_allocator: ^mem.Tracking_Allocator
+	context.allocator, tracking_allocator = lib.init_tracking_allocator()
+	defer lib.check_leaks(tracking_allocator)
 
 	file_handle := os.open("day_02/input.txt", os.O_RDONLY) or_return
 
@@ -29,9 +29,9 @@ run :: proc() -> (err: Err) {
 	input_str := string(input_data)
 	defer delete(input_str)
 
-	parse_input(input_str) or_return
+	parsed_input, parse_input_success := parse_input(input_str)
 
-	part_1(input_str) or_return
+	part_1(parsed_input) or_return
 	part_2(input_str) or_return
 	return
 }
@@ -48,7 +48,7 @@ Parsed_Input :: struct {
 }
 
 Game :: struct {
-	rounds: [10]Round,
+	rounds: [5]Round,
 	len:    int,
 }
 
@@ -58,8 +58,7 @@ Round :: struct {
 	blue_count:  u8,
 }
 
-
-part_1 :: proc(input: string) -> (err: Err) {
+part_1 :: proc(parsed_input: Parsed_Input) -> (err: Err) {
 	fmt.printf("Part 1: %s\n", "Not Implemented")
 	return
 }

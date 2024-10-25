@@ -27,6 +27,9 @@ _close_log :: proc() -> (err: os.Error) {
 }
 
 log :: proc(str: string) {
+	if log_fh == nil {
+		_init_log()
+	}
 	if fh, ok := log_fh.?; ok {
 		os.write_string(fh, str)
 	}

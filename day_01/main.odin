@@ -9,11 +9,10 @@ import "core:slice"
 
 
 main :: proc() {
-	track: mem.Tracking_Allocator
-	mem.tracking_allocator_init(&track, context.allocator)
-	context.allocator = mem.tracking_allocator(&track)
-	run()
-	lib.mem_debug(&track)
+	err := run()
+	if err != nil {
+		fmt.println(err)
+	}
 }
 
 Err :: union {
@@ -21,6 +20,10 @@ Err :: union {
 }
 
 run :: proc() -> (err: Err) {
+	tracking_allocator: ^mem.Tracking_Allocator
+	context.allocator, tracking_allocator = lib.init_tracking_allocator()
+	defer lib.check_leaks(tracking_allocator)
+
 	file_handle := os.open("day_01/input.txt", os.O_RDONLY) or_return
 
 	defer os.close(file_handle)
