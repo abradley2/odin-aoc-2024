@@ -3,6 +3,7 @@ package day_02
 import "../lib"
 import "core:bytes"
 import "core:fmt"
+import "core:log"
 import "core:mem"
 import "core:os"
 
@@ -20,6 +21,8 @@ Err :: union #shared_nil {
 
 run :: proc() -> (err: Err) {
 	tracking_allocator: ^mem.Tracking_Allocator
+	context.logger = lib.create_logger() or_return
+	defer lib.destroy_logger(context.logger)
 	context.allocator, tracking_allocator = lib.init_tracking_allocator()
 	defer lib.check_leaks(tracking_allocator)
 

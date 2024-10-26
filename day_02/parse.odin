@@ -1,13 +1,15 @@
 package day_02
 
-import "../lib"
 import "core:fmt"
+import "core:log"
 import "core:strconv"
 import "core:strings"
 import "core:text/scanner"
 
 
 parse_input :: proc(input: string) -> (parsed_input: Parsed_Input, success: bool) {
+	success = true
+
 	context.allocator = context.temp_allocator
 	defer free_all(context.allocator)
 
@@ -15,7 +17,7 @@ parse_input :: proc(input: string) -> (parsed_input: Parsed_Input, success: bool
 
 	parsed_input.len = len(lines)
 	if parsed_input.len > len(parsed_input.games) {
-		lib.logf("Exceeded maximum number of games: %d", len(lines))
+		log.errorf("Exceeded maximum number of games: %d", len(lines))
 		success = false
 		return
 	}
@@ -23,26 +25,21 @@ parse_input :: proc(input: string) -> (parsed_input: Parsed_Input, success: bool
 	parse_err := new(string)
 	for line, game_idx in lines {
 		s: scanner.Scanner
-		tokenizer := scanner.init(&s, input)
-		game, err := parse_input_line(line, tokenizer)
+		tokenizer := scanner.init(&s, line)
+		game, err := parse_input_line(tokenizer)
 		if err != nil {
-			lib.logf("error: %v, at line: %d, column: %d", err, game_idx, tokenizer.column)
+			log.errorf("error: %v, at line: %d, column: %d", err, game_idx, tokenizer.column)
+			success = false
 			return
 		}
-
-		fmt.println(game)
+		parsed_input.games[game_idx] = game
+		parsed_input.len = game_idx + 1
 	}
 
 	return
 }
 
-parse_input_line :: proc(
-	input: string,
-	tokenizer: ^scanner.Scanner,
-) -> (
-	game: Game,
-	err: Maybe(string),
-) {
+parse_input_line :: proc(tokenizer: ^scanner.Scanner) -> (game: Game, err: Maybe(string)) {
 	r := scanner.scan(tokenizer)
 
 	if r == scanner.Ident && scanner.token_text(tokenizer) == "Game" {
