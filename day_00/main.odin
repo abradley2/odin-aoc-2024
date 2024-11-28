@@ -26,12 +26,7 @@ run :: proc() -> (err: Err) {
 	context.allocator, tracking_allocator = lib.init_tracking_allocator()
 	defer lib.check_leaks(tracking_allocator)
 
-	file_handle := os.open("day_00/input.txt", os.O_RDONLY) or_return
-
-	defer os.close(file_handle)
-
-	input_data := os.read_entire_file_from_handle_or_err(file_handle) or_return
-	defer delete(input_data)
+	input_data := #load("./input.txt")
 
 	part_1(input_data) or_return
 	part_2(input_data) or_return
